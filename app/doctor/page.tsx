@@ -2,12 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 
-// Next.js dynamic import for Jitsi to prevent SSR crashes on Vercel
 const JitsiMeeting = dynamic(() => import('@jitsi/react-sdk').then((mod) => mod.JitsiMeeting), { ssr: false });
 
+// ADDED: hasPreviousPrescription flag to the mock data
 const MOCK_QUEUE = [
-  { id: '1', name: 'Mohit Choudhury', phone: '9876543210', age: 21, gender: 'Male', symptoms: 'Severe stomach ache and mild fever since yesterday morning.', duration: 2, severity: 8, timeWaiting: '2 mins' },
-  { id: '2', name: 'Rahul Sharma', phone: '9998887776', age: 34, gender: 'Male', symptoms: 'Continuous dry cough and shortness of breath.', duration: 5, severity: 6, timeWaiting: '5 mins' }
+  { id: '1', name: 'Mohit Choudhury', phone: '9876543210', age: 21, gender: 'Male', symptoms: 'Severe stomach ache and mild fever since yesterday morning.', duration: 2, severity: 8, timeWaiting: '2 mins', hasPreviousPrescription: true },
+  { id: '2', name: 'Rahul Sharma', phone: '9998887776', age: 34, gender: 'Male', symptoms: 'Continuous dry cough and shortness of breath.', duration: 5, severity: 6, timeWaiting: '5 mins', hasPreviousPrescription: false }
 ];
 
 export default function DoctorDashboard() {
@@ -90,11 +90,7 @@ export default function DoctorDashboard() {
               <span className={`text-xs sm:text-sm font-bold transition-colors ${isOnline ? 'text-emerald-400' : 'text-slate-400'}`}>
                 {isOnline ? 'ON' : 'OFF'}
               </span>
-              <button
-                type="button"
-                onClick={() => setIsOnline(!isOnline)}
-                className={`relative inline-flex h-5 w-9 sm:h-6 sm:w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${isOnline ? 'bg-emerald-500' : 'bg-slate-600'}`}
-              >
+              <button type="button" onClick={() => setIsOnline(!isOnline)} className={`relative inline-flex h-5 w-9 sm:h-6 sm:w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${isOnline ? 'bg-emerald-500' : 'bg-slate-600'}`}>
                 <span className={`pointer-events-none inline-block h-4 w-4 sm:h-5 sm:w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isOnline ? 'translate-x-4 sm:translate-x-5' : 'translate-x-0'}`} />
               </button>
             </div>
@@ -133,14 +129,18 @@ export default function DoctorDashboard() {
                         <span className={`text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full ${patient.severity >= 7 ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
                           Severity: {patient.severity}/10
                         </span>
+                        {/* INDICATOR IF THEY UPLOADED A FILE */}
+                        {patient.hasPreviousPrescription && (
+                          <span className="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 flex items-center gap-1">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                            File Attached
+                          </span>
+                        )}
                       </div>
                       <p className="text-xs sm:text-sm text-slate-500 font-medium">{patient.age} yrs • {patient.gender} • Waiting: {patient.timeWaiting}</p>
                       <p className="text-slate-700 text-xs sm:text-sm mt-2 line-clamp-2">{patient.symptoms}</p>
                     </div>
-                    <button 
-                      onClick={() => { setActivePatient(patient); setCurrentStep(3); }} 
-                      className="shrink-0 bg-blue-600 text-white hover:bg-blue-700 font-bold py-2 px-4 sm:py-2.5 sm:px-6 rounded-xl transition-colors shadow-md w-full md:w-auto text-center text-sm sm:text-base"
-                    >
+                    <button onClick={() => { setActivePatient(patient); setCurrentStep(3); }} className="shrink-0 bg-blue-600 text-white hover:bg-blue-700 font-bold py-2 px-4 sm:py-2.5 sm:px-6 rounded-xl transition-colors shadow-md w-full md:w-auto text-center text-sm sm:text-base">
                       Accept & Review
                     </button>
                   </div>
@@ -170,9 +170,26 @@ export default function DoctorDashboard() {
               Start Live Consultation
             </button>
           </div>
-          <div className="bg-slate-50 p-5 sm:p-6 rounded-xl border border-slate-100">
-            <h3 className="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Reported Symptoms</h3>
-            <p className="text-slate-800 text-base sm:text-lg leading-relaxed">{activePatient.symptoms}</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-slate-50 p-5 sm:p-6 rounded-xl border border-slate-100 h-full">
+              <h3 className="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Reported Symptoms</h3>
+              <p className="text-slate-800 text-base sm:text-lg leading-relaxed">{activePatient.symptoms}</p>
+            </div>
+            
+            {/* UPLOADED FILE VIEWER SECTION */}
+            {activePatient.hasPreviousPrescription && (
+              <div className="bg-blue-50 p-5 sm:p-6 rounded-xl border border-blue-100 flex flex-col justify-center">
+                <h3 className="text-xs sm:text-sm font-bold text-blue-800 uppercase tracking-wider mb-3">Attached Documents</h3>
+                <button 
+                  onClick={() => alert("Opening file viewer... (In a live app, this will open the patient's uploaded PDF or Image from the cloud database!)")}
+                  className="w-full bg-white border border-blue-200 text-blue-700 hover:bg-blue-600 hover:text-white hover:border-blue-600 font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                  View Previous_Prescription.pdf
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -194,63 +211,46 @@ export default function DoctorDashboard() {
             <span className="text-white font-semibold sm:hidden truncate max-w-[120px]">Secure Terminal</span>
           </div>
           
-          <button 
-            onClick={handleCompleteConsultation} 
-            className="bg-red-600 hover:bg-red-500 text-white font-bold py-1.5 px-3 md:py-2 md:px-5 rounded-lg flex items-center gap-2 border border-red-500/50 transition-colors shadow-md text-sm md:text-base"
-          >
+          <button onClick={handleCompleteConsultation} className="bg-red-600 hover:bg-red-500 text-white font-bold py-1.5 px-3 md:py-2 md:px-5 rounded-lg flex items-center gap-2 border border-red-500/50 transition-colors shadow-md text-sm md:text-base">
             <svg className="w-4 h-4 md:w-5 md:h-5 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28a1 1 0 00-.684-.948l-4.493-1.498a1 1 0 00-1.21.502l-1.13 2.257a11.042 11.042 0 01-5.516-5.517l2.257-1.128a1 1 0 00.502-1.21L9.228 3.683A1 1 0 008.279 3H5z"></path></svg>
             End Call
           </button>
         </div>
         
-        {/* FIX: Removed overflow-hidden to allow scrolling on mobile. Added pb-10 so the bottom button isn't cut off */}
         <div className="flex-grow p-4 flex flex-col lg:flex-row gap-6 bg-slate-900 overflow-y-auto pb-10">
           
-          {/* FIX: Set a minimum height of 60vh on mobile so the Jitsi frame has enough room to render */}
           <div className="w-full min-h-[60vh] lg:min-h-[auto] lg:flex-[2] rounded-2xl overflow-hidden bg-slate-800 relative border border-slate-700 shadow-xl">
             {isMounted && (
               <JitsiMeeting
                 domain="meet.jit.si"
                 roomName={uniqueRoomName}
-                configOverwrite={{ 
-                  startWithAudioMuted: false, 
-                  startWithVideoMuted: false, 
-                  prejoinPageEnabled: false,
-                  prejoinConfig: { enabled: false }, // Aggressively bypass prejoin on mobile
-                  disableDeepLinking: true 
-                }}
-                interfaceConfigOverwrite={{ 
-                  TOOLBAR_BUTTONS: ['microphone', 'camera', 'settings', 'screenshare'], 
-                  SHOW_JITSI_WATERMARK: false, 
-                  SHOW_WATERMARK_FOR_GUESTS: false,
-                  MOBILE_APP_PROMO: false
-                }}
+                configOverwrite={{ startWithAudioMuted: false, startWithVideoMuted: false, prejoinPageEnabled: false, prejoinConfig: { enabled: false }, disableDeepLinking: true }}
+                interfaceConfigOverwrite={{ TOOLBAR_BUTTONS: ['microphone', 'camera', 'settings', 'screenshare'], SHOW_JITSI_WATERMARK: false, SHOW_WATERMARK_FOR_GUESTS: false, MOBILE_APP_PROMO: false }}
                 onApiReady={(externalApi) => { externalApi.executeCommand('displayName', doctorName); }}
                 getIFrameRef={(iframeRef) => { iframeRef.style.height = '100%'; iframeRef.style.width = '100%'; }}
               />
             )}
           </div>
 
-          {/* FIX: Set a minimum height for the prescription pad so it doesn't get squished */}
           <div className="w-full min-h-[40vh] lg:min-h-[auto] lg:flex-[1] bg-white rounded-2xl flex flex-col overflow-hidden border border-slate-200 shadow-xl">
-            <div className="p-3 sm:p-4 border-b bg-blue-50">
-              <h3 className="font-bold text-blue-900 text-sm sm:text-base">Rx / Prescription Pad</h3>
-              <p className="text-[10px] sm:text-xs text-blue-700 mt-0.5">Patient: {activePatient.name}</p>
+            <div className="p-3 sm:p-4 border-b bg-blue-50 flex justify-between items-center">
+              <div>
+                <h3 className="font-bold text-blue-900 text-sm sm:text-base">Rx / Prescription Pad</h3>
+                <p className="text-[10px] sm:text-xs text-blue-700 mt-0.5">Patient: {activePatient.name}</p>
+              </div>
+              
+              {/* MINI BUTTON ON THE PRESCRIPTION PAD IF THEY UPLOADED A FILE */}
+              {activePatient.hasPreviousPrescription && (
+                <button onClick={() => alert("Opening file viewer...")} className="bg-white border border-blue-200 text-blue-700 hover:bg-blue-100 p-2 rounded-lg transition-colors flex items-center justify-center shadow-sm" title="View Uploaded File">
+                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                </button>
+              )}
             </div>
             
-            <textarea 
-              className="flex-1 p-4 outline-none resize-none font-mono text-sm sm:text-base text-slate-900 bg-white" 
-              placeholder="Type clinical diagnosis & medicines here..." 
-              value={prescriptionNotes} 
-              onChange={(e) => setPrescriptionNotes(e.target.value)} 
-            />
+            <textarea className="flex-1 p-4 outline-none resize-none font-mono text-sm sm:text-base text-slate-900 bg-white" placeholder="Type clinical diagnosis & medicines here..." value={prescriptionNotes} onChange={(e) => setPrescriptionNotes(e.target.value)} />
             
             <div className="p-3 sm:p-4 border-t border-slate-100 bg-slate-50 mt-auto">
-              <button 
-                onClick={handleCompleteConsultation} 
-                disabled={!prescriptionNotes.trim()} 
-                className={`w-full font-bold py-3 sm:py-4 rounded-xl transition-all text-sm sm:text-base ${prescriptionNotes.trim() ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
-              >
+              <button onClick={handleCompleteConsultation} disabled={!prescriptionNotes.trim()} className={`w-full font-bold py-3 sm:py-4 rounded-xl transition-all text-sm sm:text-base ${prescriptionNotes.trim() ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>
                 Send Prescription
               </button>
             </div>
