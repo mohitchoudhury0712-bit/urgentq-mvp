@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { JitsiMeeting } from '@jitsi/react-sdk';
+import dynamic from 'next/dynamic';
+const JitsiMeeting = dynamic(() => import('@jitsi/react-sdk').then((mod) => mod.JitsiMeeting), { ssr: false });
 
 const GlobalDarkWrapper = ({ children, onDoctorLogin }: { children: React.ReactNode, onDoctorLogin: () => void }) => (
   <div className="relative min-h-screen bg-slate-950 flex flex-col font-sans overflow-hidden">

@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { JitsiMeeting } from '@jitsi/react-sdk';
+import dynamic from 'next/dynamic';
+const JitsiMeeting = dynamic(() => import('@jitsi/react-sdk').then((mod) => mod.JitsiMeeting), { ssr: false });
 
 const MOCK_QUEUE = [
   { id: '1', name: 'Mohit Choudhury', phone: '9876543210', age: 21, gender: 'Male', symptoms: 'Severe stomach ache and mild fever since yesterday morning.', duration: 2, severity: 8, timeWaiting: '2 mins' },
