@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+
+// Next.js dynamic import for Jitsi to prevent SSR crashes on Vercel
 const JitsiMeeting = dynamic(() => import('@jitsi/react-sdk').then((mod) => mod.JitsiMeeting), { ssr: false });
 
 const MOCK_QUEUE = [
@@ -13,7 +15,7 @@ export default function DoctorDashboard() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
-  // New States for Availability and Identity
+  // States for Availability and Identity
   const [isOnline, setIsOnline] = useState<boolean>(false);
   const [doctorName, setDoctorName] = useState('Dr. Mohit Choudhury');
 
@@ -26,7 +28,6 @@ export default function DoctorDashboard() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (email && password.length >= 6) {
-      // Dynamically format a clean profile name from the email prefix if it isn't the default mockup
       const emailPrefix = email.split('@')[0];
       if (emailPrefix.toLowerCase() !== 'doctor') {
         const formattedName = emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1);
@@ -57,11 +58,13 @@ export default function DoctorDashboard() {
           <form onSubmit={handleLogin} className="space-y-5 text-left">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Registered Email</label>
-              <input type="email" required placeholder="doctor@urgentq.com" className="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:border-blue-500 bg-slate-50 transition-all" value={email} onChange={(e) => setEmail(e.target.value)} />
+              {/* Added text-slate-900 to force dark text on mobile */}
+              <input type="email" required placeholder="doctor@urgentq.com" className="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:border-blue-500 bg-slate-50 text-slate-900 transition-all" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Password</label>
-              <input type="password" required placeholder="••••••••" className="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:border-blue-500 bg-slate-50 transition-all" value={password} onChange={(e) => setPassword(e.target.value)} />
+              {/* Added text-slate-900 to force dark text on mobile */}
+              <input type="password" required placeholder="••••••••" className="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:border-blue-500 bg-slate-50 text-slate-900 transition-all" value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
             <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg py-3.5 px-6 rounded-xl mt-4 transition-colors shadow-lg shadow-blue-100">
               Access Dashboard
@@ -80,14 +83,12 @@ export default function DoctorDashboard() {
           <div className="flex items-center gap-4">
             <img src="/logo.png" alt="UrgentQ Logo" className="h-9 w-auto object-contain" />
             <div className="h-6 w-[1px] bg-slate-700 hidden sm:block"></div>
-            {/* DYNAMIC DOCTOR NAME WITH PREFIX */}
             <div className="text-lg font-bold tracking-wide text-blue-400 bg-slate-800/60 px-4 py-1.5 rounded-xl border border-slate-700/50">
               {doctorName}
             </div>
           </div>
           
           <div className="flex items-center gap-6">
-            {/* SLEEK STATUS TOGGLE SWITCH */}
             <div className="flex items-center gap-3 bg-slate-800/80 px-4 py-2 rounded-2xl border border-slate-700">
               <span className={`text-sm font-bold transition-colors ${isOnline ? 'text-emerald-400' : 'text-slate-400'}`}>
                 {isOnline ? 'ONLINE' : 'OFFLINE'}
@@ -105,14 +106,12 @@ export default function DoctorDashboard() {
         </header>
 
         <main className="max-w-6xl mx-auto p-6 mt-4">
-          {/* Top Metrics Row */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200"><p className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Active Hours</p><p className="text-3xl font-extrabold text-slate-800">4h 30m</p></div>
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200"><p className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Patients Attended</p><p className="text-3xl font-extrabold text-blue-600">12</p></div>
             <div className="bg-emerald-50 p-6 rounded-2xl shadow-sm border border-emerald-100"><p className="text-sm font-bold text-emerald-600 uppercase tracking-wider mb-1">Today's Earnings</p><p className="text-3xl font-extrabold text-emerald-700">₹4,500</p></div>
           </div>
 
-          {/* Conditional Rendering based on Status Toggle */}
           <div>
             <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
               Live Waiting Queue 
@@ -120,7 +119,6 @@ export default function DoctorDashboard() {
             </h2>
             
             {!isOnline ? (
-              /* Offline State UX */
               <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center flex flex-col items-center justify-center">
                 <div className="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mb-4">
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
@@ -129,7 +127,6 @@ export default function DoctorDashboard() {
                 <p className="text-slate-500 text-sm max-w-sm">Flip the switch in the top header to go online, broadcast your availability, and access the live patient queue.</p>
               </div>
             ) : (
-              /* Online State UX - Show List */
               <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all">
                 {MOCK_QUEUE.map((patient) => (
                   <div key={patient.id} className="p-6 border-b border-slate-100 hover:bg-slate-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-colors">
@@ -167,12 +164,12 @@ export default function DoctorDashboard() {
           ← Back to Dashboard
         </button>
         <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
-          <div className="flex justify-between items-start mb-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
               <h2 className="text-3xl font-extrabold text-slate-900">{activePatient.name}</h2>
               <p className="text-slate-500 font-medium mt-1">{activePatient.age} yrs • {activePatient.gender}</p>
             </div>
-            <button onClick={() => setCurrentStep(4)} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-8 rounded-xl shadow-md transition-colors">
+            <button onClick={() => setCurrentStep(4)} className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-8 rounded-xl shadow-md transition-colors">
               Start Live Consultation
             </button>
           </div>
@@ -190,27 +187,27 @@ export default function DoctorDashboard() {
     const uniqueRoomName = `UrgentQ-Consultation-${activePatient.phone}`;
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col font-sans overflow-hidden">
-        {/* DOCTOR SIDE HEADER WITH DYNAMIC NAME AND RED DISCONNECT BUTTON */}
-        <div className="h-16 bg-slate-950 flex items-center justify-between px-6 border-b border-slate-800 shrink-0">
+        <div className="h-16 bg-slate-950 flex items-center justify-between px-4 md:px-6 border-b border-slate-800 shrink-0">
           <div className="flex items-center gap-3">
             <span className="flex h-3 w-3 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
             </span>
-            <span className="text-white font-semibold">{doctorName} — Secure Terminal</span>
+            <span className="text-white font-semibold hidden sm:inline">{doctorName} — Secure Terminal</span>
+            <span className="text-white font-semibold sm:hidden">Secure Terminal</span>
           </div>
           
           <button 
             onClick={handleCompleteConsultation} 
-            className="bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-5 rounded-lg flex items-center gap-2 border border-red-500/50 transition-colors shadow-md"
+            className="bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-3 md:px-5 rounded-lg flex items-center gap-2 border border-red-500/50 transition-colors shadow-md text-sm md:text-base"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28a1 1 0 00-.684-.948l-4.493-1.498a1 1 0 00-1.21.502l-1.13 2.257a11.042 11.042 0 01-5.516-5.517l2.257-1.128a1 1 0 00.502-1.21L9.228 3.683A1 1 0 008.279 3H5z"></path></svg>
-            End Consultation
+            <svg className="w-5 h-5 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28a1 1 0 00-.684-.948l-4.493-1.498a1 1 0 00-1.21.502l-1.13 2.257a11.042 11.042 0 01-5.516-5.517l2.257-1.128a1 1 0 00.502-1.21L9.228 3.683A1 1 0 008.279 3H5z"></path></svg>
+            End Call
           </button>
         </div>
         
-        <div className="flex-grow p-4 flex gap-6 overflow-hidden bg-slate-900">
-          <div className="flex-[2] rounded-2xl overflow-hidden bg-slate-800 relative border border-slate-700">
+        <div className="flex-grow p-4 flex flex-col md:flex-row gap-6 overflow-hidden bg-slate-900">
+          <div className="flex-[2] rounded-2xl overflow-hidden bg-slate-800 relative border border-slate-700 min-h-[300px]">
             {isMounted && (
               <JitsiMeeting
                 domain="meet.jit.si"
@@ -222,11 +219,12 @@ export default function DoctorDashboard() {
               />
             )}
           </div>
-          <div className="flex-[1] bg-white rounded-2xl flex flex-col overflow-hidden border border-slate-200">
+          <div className="flex-[1] bg-white rounded-2xl flex flex-col overflow-hidden border border-slate-200 min-h-[300px]">
             <div className="p-4 border-b bg-blue-50"><h3 className="font-bold text-blue-900">Rx / Prescription Pad</h3><p className="text-xs text-blue-700">Patient: {activePatient.name}</p></div>
-            <textarea className="flex-1 p-4 outline-none resize-none font-mono text-sm" placeholder="Type clinical diagnosis & medicines here..." value={prescriptionNotes} onChange={(e) => setPrescriptionNotes(e.target.value)} />
+            {/* Added text-slate-900 to force dark text on mobile */}
+            <textarea className="flex-1 p-4 outline-none resize-none font-mono text-sm text-slate-900 bg-white" placeholder="Type clinical diagnosis & medicines here..." value={prescriptionNotes} onChange={(e) => setPrescriptionNotes(e.target.value)} />
             <button onClick={handleCompleteConsultation} disabled={!prescriptionNotes.trim()} className={`m-4 font-bold py-4 rounded-xl transition-all ${prescriptionNotes.trim() ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>
-              Send Prescription & End Call
+              Send Prescription
             </button>
           </div>
         </div>
